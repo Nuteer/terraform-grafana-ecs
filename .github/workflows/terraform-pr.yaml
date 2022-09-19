@@ -1,0 +1,50 @@
+name: Terraform PR CI/CD
+
+on:
+  push:
+    paths:
+      - '**/**.tf'
+      - '**/**.tfvars'
+      - '.github/workflows/terraform-pr.yaml'
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  delete-old-comments:
+    runs-on: [ self-hosted ]
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Delete old comments
+        uses: izhangzhihao/delete-comment@master
+        with:
+          github_token: ${{ github.token }}
+          delete_user_name: github-actions[bot]
+          issue_number: ${{ github.event.number }}
+
+  terraform-pr:
+    runs-on: [ self-hosted ]
+    strategy:
+      fail-fast: false
+      matrix:
+        tf-workspaces:
+          - dev
+
+    steps:
+      - uses: actions/checkout@v3
+        name: Checkout this repository
+
+      - uses: actions/checkout@v3
+        name: Checkout our reusable workflows repository
+        with:
+          repository: /# add the repo
+          token: ${{ secrets.ORG_GITHUB_TOKEN }}
+          ref: main
+          path: mountainseed-gh-actions
+
+      - id: terraform
+        name: Composite action Terraform
+        uses: /# add the uses
+        with:
+          tf-workspace: ${{ matrix.tf-workspaces }}
+          tf-directory: ./terraform
