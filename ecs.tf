@@ -75,7 +75,7 @@ resource "aws_ecs_service" "grafana" {
   task_definition = aws_ecs_task_definition.grafana.arn
   platform_version = "1.4.0"
   desired_count   = 1
-  launch_type = "FARGATE"
+  launch_type = "EC2"
   depends_on      = [aws_iam_role.grafana_execution_role]
 
   load_balancer {
