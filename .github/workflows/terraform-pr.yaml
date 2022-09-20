@@ -44,7 +44,7 @@ jobs:
 
       - id: terraform
         name: Composite action Terraform
-        uses: /# add the uses
+        uses: ./.github/action-templates/terraform-pr
         with:
           tf-workspace: ${{ matrix.tf-workspaces }}
           tf-directory: ./terraform
