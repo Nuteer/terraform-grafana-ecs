@@ -18,7 +18,7 @@ resource "aws_iam_role" "grafana_execution_role" {
 EOF
   tags = {
     Environment = "Desenvolvimento"
-    Name = "grafana"
+    Name        = "grafana"
   }
 }
 resource "aws_iam_role" "grafana_task_role" {
@@ -41,7 +41,7 @@ resource "aws_iam_role" "grafana_task_role" {
 EOF
   tags = {
     Environment = "Desenvolvimento"
-    Name = "grafana"
+    Name        = "grafana"
   }
 }
 data "aws_iam_policy_document" "grafana_execution" {
@@ -49,17 +49,17 @@ data "aws_iam_policy_document" "grafana_execution" {
     sid = "1"
 
     actions = [
-        "ec2:*",
-        "ecs:*",
-        "ecr:*",
-        "elasticfilesystem:*",
-        "autoscaling:*",
-        "elasticloadbalancing:*",
-        "application-autoscaling:*",
-        "logs:*",
-        "tag:*",
-        "resource-groups:*",
-        "elasticfilesystem:*"
+      "ec2:*",
+      "ecs:*",
+      "ecr:*",
+      "elasticfilesystem:*",
+      "autoscaling:*",
+      "elasticloadbalancing:*",
+      "application-autoscaling:*",
+      "logs:*",
+      "tag:*",
+      "resource-groups:*",
+      "elasticfilesystem:*"
     ]
 
     resources = [
@@ -72,19 +72,19 @@ data "aws_iam_policy_document" "grafana_task" {
     sid = "1"
 
     actions = [
-        "ec2:*",
-        "ecs:*",
-        "ecr:*",
-        "autoscaling:*",
-        "elasticloadbalancing:*",
-        "application-autoscaling:*",
-        "logs:*",
-        "tag:*",
-        "resource-groups:*",
-        "elasticfilesystem:*",
-        "cloudwatch:List*",
-        "cloudwatch:Describe*",
-        "cloudwatch:Get*",
+      "ec2:*",
+      "ecs:*",
+      "ecr:*",
+      "autoscaling:*",
+      "elasticloadbalancing:*",
+      "application-autoscaling:*",
+      "logs:*",
+      "tag:*",
+      "resource-groups:*",
+      "elasticfilesystem:*",
+      "cloudwatch:List*",
+      "cloudwatch:Describe*",
+      "cloudwatch:Get*",
     ]
 
     resources = [

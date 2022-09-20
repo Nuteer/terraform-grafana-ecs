@@ -21,11 +21,11 @@ data "aws_subnet_ids" "public" {
 }
 
 resource "aws_lb" "grafana" {
-  name               = "grafana-lb"
-  internal           = false
-  load_balancer_type = "application"
-  security_groups    = [aws_security_group.grafana_service.id]
-  subnets            = aws_subnet.public.*.id
+  name                       = "grafana-lb"
+  internal                   = false
+  load_balancer_type         = "application"
+  security_groups            = [aws_security_group.grafana_service.id]
+  subnets                    = aws_subnet.public.*.id
   enable_deletion_protection = false
 
   tags = {
@@ -97,11 +97,11 @@ resource "aws_security_group" "grafana" {
   vpc_id      = aws_vpc.fargate.id
 
   ingress {
-    description = "From LB"
-    from_port   = 3000
-    to_port     = 3000
-    protocol    = "tcp"
-    self        = true
+    description     = "From LB"
+    from_port       = 3000
+    to_port         = 3000
+    protocol        = "tcp"
+    self            = true
     security_groups = [aws_security_group.grafana_service.id]
   }
 
@@ -159,7 +159,7 @@ resource "aws_security_group" "endpoints" {
     security_groups = [
       aws_security_group.grafana_service.id,
       aws_security_group.grafana.id
-      ]
+    ]
   }
   ingress {
     description = "NFS Access"
@@ -169,7 +169,7 @@ resource "aws_security_group" "endpoints" {
     security_groups = [
       aws_security_group.grafana_service.id,
       aws_security_group.grafana.id
-      ]
+    ]
   }
   egress {
     from_port   = 0
@@ -196,11 +196,11 @@ resource "aws_vpc_endpoint" "s3" {
 }
 
 resource "aws_vpc_endpoint" "ecr-dkr" {
-  vpc_id       = aws_vpc.fargate.id
-  service_name = "com.amazonaws.${var.aws_region}.ecr.dkr"
-  vpc_endpoint_type = "Interface"
-  security_group_ids = [ aws_security_group.endpoints.id ]
-  subnet_ids = aws_subnet.public.*.id
+  vpc_id              = aws_vpc.fargate.id
+  service_name        = "com.amazonaws.${var.aws_region}.ecr.dkr"
+  vpc_endpoint_type   = "Interface"
+  security_group_ids  = [aws_security_group.endpoints.id]
+  subnet_ids          = aws_subnet.public.*.id
   private_dns_enabled = true
   tags = {
     Name        = "ecr-dkr-endpoint"
@@ -209,11 +209,11 @@ resource "aws_vpc_endpoint" "ecr-dkr" {
 }
 
 resource "aws_vpc_endpoint" "ecr-api" {
-  vpc_id       = aws_vpc.fargate.id
-  service_name = "com.amazonaws.${var.aws_region}.ecr.api"
-  vpc_endpoint_type = "Interface"
-  security_group_ids = [ aws_security_group.endpoints.id ]
-  subnet_ids = aws_subnet.public.*.id
+  vpc_id              = aws_vpc.fargate.id
+  service_name        = "com.amazonaws.${var.aws_region}.ecr.api"
+  vpc_endpoint_type   = "Interface"
+  security_group_ids  = [aws_security_group.endpoints.id]
+  subnet_ids          = aws_subnet.public.*.id
   private_dns_enabled = true
   tags = {
     Name        = "ecr-api-endpoint"
@@ -226,8 +226,8 @@ resource "aws_vpc_endpoint" "efs" {
   private_dns_enabled = true
   service_name        = "com.amazonaws.${var.aws_region}.elasticfilesystem"
   vpc_endpoint_type   = "Interface"
-  security_group_ids = [aws_security_group.endpoints.id]
-  subnet_ids = aws_subnet.public.*.id
+  security_group_ids  = [aws_security_group.endpoints.id]
+  subnet_ids          = aws_subnet.public.*.id
   tags = {
     Name        = "efs-endpoint"
     Environment = "Desenvolvimento"
@@ -239,8 +239,8 @@ resource "aws_vpc_endpoint" "logs" {
   private_dns_enabled = true
   service_name        = "com.amazonaws.${var.aws_region}.logs"
   vpc_endpoint_type   = "Interface"
-  security_group_ids = [aws_security_group.endpoints.id]
-  subnet_ids = aws_subnet.public.*.id
+  security_group_ids  = [aws_security_group.endpoints.id]
+  subnet_ids          = aws_subnet.public.*.id
 
   tags = {
     Name        = "logs-endpoint"
@@ -253,8 +253,8 @@ resource "aws_vpc_endpoint" "cw" {
   private_dns_enabled = true
   service_name        = "com.amazonaws.${var.aws_region}.monitoring"
   vpc_endpoint_type   = "Interface"
-  security_group_ids = [aws_security_group.endpoints.id]
-  subnet_ids = aws_subnet.public.*.id
+  security_group_ids  = [aws_security_group.endpoints.id]
+  subnet_ids          = aws_subnet.public.*.id
   tags = {
     Name        = "cw-endpoint"
     Environment = "Desenvolvimento"

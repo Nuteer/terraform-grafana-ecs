@@ -1,7 +1,7 @@
 terraform {
   required_providers {
     aws = {
-        version = "~> 3.0"
+      version = "~> 3.0"
     }
   }
 }
@@ -11,6 +11,6 @@ provider "aws" {
 }
 
 locals {
-    availability_zone_count = 3
-    cluster_name            = "Fargate"
+  availability_zone_count = 3
+  cluster_name            = "Fargate"
 }
