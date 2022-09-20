@@ -40,7 +40,7 @@ jobs:
           repository: /# add the repo
           token: ${{ secrets.ORG_GITHUB_TOKEN }}
           ref: main
-          path: mountainseed-gh-actions
+          path: gh-actions
 
       - id: terraform
         name: Composite action Terraform
