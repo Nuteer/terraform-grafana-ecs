@@ -7,4 +7,4 @@ resource "aws_cloudwatch_log_group" "grafana" {
     Environment = "Desenvolvimento"
     Application = "Grafana-Fargate"
   }
-} 
+}
