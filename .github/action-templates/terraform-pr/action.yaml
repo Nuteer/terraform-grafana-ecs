@@ -5,9 +5,35 @@ inputs:
     description: 'Terraform workspace'
     required: true
     default: 'dev'
+  terraform-version:
+    description: 'The version of Terraform CLI to install. Defaults to `latest`.'
+    required: false
+    default: 'latest'
+  tf-directory:
+    description: 'Directory containing terraform files'
+    required: false
+    default: '.'
+  github_token:
+    description: 'Directory containing terraform files'
+    required: true
+
 runs:
   using: "composite"
   steps:
+
+    - uses: tspascoal/get-user-teams-membership@v1
+      if: ${{ github.event_name == 'workflow_dispatch' }}
+      id: actorTeams
+      with:
+        username: ${{ github.actor }}
+        GITHUB_TOKEN: ${{ inputs.github_token }}
+
+    - if: ${{ !contains(steps.actorTeams.outputs.teams, 'PROD Deployment Team') && inputs.tf-workspace == 'prod' && github.event_name == 'workflow_dispatch' || !contains(steps.actorTeams.outputs.teams, 'UAT Deployment Team') && inputs.tf-workspace == 'uat' && github.event_name == 'workflow_dispatch' }}
+      name: "Github team check"
+      run: |
+        echo "The user ${{ github.actor }} doesn't belong to the specific deployment team.\n Teams that the user belongs to:\n ${{ steps.actorTeams.outputs.teams }}"
+        exit 1
+      shell: bash
 
     - name: Early exit
       if: ${{github.ref == 'refs/heads/main' && github.event_name == 'push' && inputs.tf-workspace != 'dev'}}
@@ -15,6 +41,7 @@ runs:
         echo "${{github.ref == 'refs/heads/main' && github.event_name == 'push' && inputs.tf-workspace != 'dev' }}"
         echo "This can run on main only for dev" && exit 1
       shell: bash
+
 
     - name: Checkout
       uses: actions/checkout@v3
@@ -29,51 +56,52 @@ runs:
       run: |
         curl -s https://raw.githubusercontent.com/aquasecurity/tfsec/master/scripts/install_linux.sh | bash
         curl -s https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash
-
     - name: Setup terraform
       uses: hashicorp/setup-terraform@v2
+      with:
+        terraform_version: ${{ inputs.terraform-version }}
 
     - name: Terraform Init
-      working-directory: ./terraform
+      working-directory: ${{ inputs.tf-directory }}
       shell: bash
       id: init
       run: terraform init
 
     - name: Workspace selection - ${{ inputs.tf-workspace }}
-      working-directory: ./terraform
+      working-directory: ${{ inputs.tf-directory }}
       shell: bash
       run: terraform workspace select $TERRAFORM_WORKSPACE || terraform workspace new $TERRAFORM_WORKSPACE
       env:
         TERRAFORM_WORKSPACE: ${{ inputs.tf-workspace }}
 
     - name: Terraform Format
-      working-directory: ./terraform
+      working-directory: ${{ inputs.tf-directory }}
       shell: bash
       id: fmt
       run: terraform fmt -check
 
     - name: Terraform Validate
-      working-directory: ./terraform
+      working-directory: ${{ inputs.tf-directory }}
       shell: bash
       id: validate
       run: terraform validate -no-color
 
     - name: TFSec
-      working-directory: ./terraform
+      working-directory: ${{ inputs.tf-directory }}
       shell: bash
       id: tfsec
-      run: tfsec .
-      continue-on-error: true
+      run: tfsec . --no-color -m HIGH
+      continue-on-error: false # breaks pipeline once it finds a HIGH or CRITICAL Security issue
 
     - name: tflint
       id: tflint
       run: tflint --no-color .
-      working-directory: ./terraform
+      working-directory: ${{ inputs.tf-directory }}
       shell: bash
       continue-on-error: true
 
     - name: Terraform Plan
-      working-directory: ./terraform
+      working-directory: ${{ inputs.tf-directory }}
       shell: bash
       id: plan
       if: github.event_name == 'pull_request'
@@ -113,31 +141,25 @@ runs:
           #### Terraform Validation 🤖\`${{ steps.validate.outcome }}\`
           #### Terraform Linter 🤖\`${{ steps.tflint.outcome }}\`
           #### TFsec 🤖\`${{ steps.tfsec.outcome }}\`
-
           <details><summary>Show Plan</summary>
-
           \`\`\`\n
           ${plan}
           \`\`\
-
           </details>
-
           *Pushed by: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;
-
           github.rest.issues.createComment({
             issue_number: context.issue.number,
             owner: context.repo.owner,
             repo: context.repo.repo,
             body: output
           })
-
     - name: Terraform Plan Status
       shell: bash
       if: steps.plan.outcome == 'failure'
       run: exit 1
 
     - name: Terraform Apply only if dev
-      working-directory: ./terraform
+      working-directory: ${{ inputs.tf-directory }}
       shell: bash
       if: ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' && inputs.tf-workspace == 'dev' }}
       run: terraform apply -auto-approve -input=false -var-file=./tfvars/${{ inputs.tf-workspace }}.tfvars
